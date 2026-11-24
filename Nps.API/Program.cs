@@ -35,6 +35,15 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
+// ЛАБ7: CORS, щоб веб-клієнт (інший домен на Render) міг звертатися до API.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("WebClient", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 // ЛАБ7: рядок підключення до PostgreSQL береться ЛИШЕ із конфігурації середовища
 // (user-secrets локально, змінна ConnectionStrings__NpsDatabase у хмарі). У коді його немає.
 var connectionString = builder.Configuration.GetConnectionString("NpsDatabase")
@@ -61,6 +70,9 @@ var app = builder.Build();
 
 // ЛАБ5: централізована обробка помилок. Має стояти першою, щоб ловити помилки наступних компонентів.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// ЛАБ7: CORS. Стоїть одразу після обробки помилок, до маршрутів.
+app.UseCors("WebClient");
 
 app.UseSwagger();
 app.UseSwaggerUI();
